@@ -253,14 +253,16 @@ async function main() {
     if (rep.etat === "ACCEPTEE") inscrits[rep.formation].push(etudiant.id);
   }
 
-  // Séances des 8 premières semaines (lundi → vendredi, 3 créneaux)
+  // Séances des 10 premières semaines (lundi → vendredi, 3 créneaux), jusqu'à la semaine en cours.
+  // Le journal de classe n'est rempli que pour les séances antérieures à aujourd'hui.
   // R6b : une matière au plus une fois par jour et par formation ; un enseignant n'est jamais à deux endroits à la fois.
   const curseur: Record<string, number> = {};
   const progression: Record<string, number> = {};
   const seances: { id: number; date: Date; formation: CodeFormation; enseignantId: number; heures: number }[] = [];
-  const aujourdHui = new Date();
+  const maintenant = new Date();
+  const aujourdHui = new Date(Date.UTC(maintenant.getFullYear(), maintenant.getMonth(), maintenant.getDate()));
 
-  for (let s = 0; s < 8; s++) {
+  for (let s = 0; s < 10; s++) {
     for (let jour = 0; jour < 5; jour++) {
       const utiliseesAujourdhui: Record<string, Set<string>> = {};
       for (const [c, creneau] of CRENEAUX.entries()) {
