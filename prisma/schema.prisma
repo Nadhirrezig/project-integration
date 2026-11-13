@@ -1,0 +1,277 @@
+// Gestion de Scolarité — Centre de formation informatique
+// Noms des modèles repris du diagramme de classes.
+// `Personne` (abstraite en UML) → ses champs sont répétés dans Etudiant et Enseignant.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────── Enums ─────────────────────────
+
+enum Role {
+  ADMIN
+}
+
+enum CodeFormation {
+  TSIG
+  ATBIG
+  CAPI
+}
+
+enum EtatDemande {
+  EN_ATTENTE
+  ACCEPTEE
+  REFUSEE
+}
+
+// ───────────────────────── Utilisateur ─────────────────────────
+
+model Utilisateur {
+  id         Int      @id @default(autoincrement())
+  login      String   @unique
+  motDePasse String // hash bcrypt
+  nom        String
+  role       Role     @default(ADMIN)
+  createdAt  DateTime @default(now())
+}
+
+// ───────────────────────── Personnes ─────────────────────────
+
+model Etudiant {
+  id                Int      @id @default(autoincrement())
+  matricule         String   @unique
+  nom               String
+  prenom            String
+  dateNaissance     DateTime @db.Date
+  lieuNaissance     String
+  nationalite       String
+  cin               String   @unique
+  adresse           String
+  niveauEtude       String
+  telephone         String
+  etatCivil         String
+  nomPereOuConjoint String
+  createdAt         DateTime @default(now())
+
+  demandesInscription DemandeInscription[]
+  absences            AbsenceEtudiant[]
+}
+
+model Enseignant {
+  id         Int      @id @default(autoincrement())
+  nom        String
+  prenom     String
+  cin        String   @unique
+  adresse    String
+  telephone  String
+  email      String
+  specialite String
+  createdAt  DateTime @default(now())
+
+  matieres             Matiere[] // R6a : une matière → un seul enseignant
+  demandesEnseignement DemandeEnseignement[]
+  seances              Seance[]
+  absences             AbsenceEnseignant[]
+  paies                Paie[]
+}
+
+// ───────────────────────── Formation / planning ─────────────────────────
+
+model Formation {
+  id            Int           @id @default(autoincrement())
+  code          CodeFormation
+  libelle       String
+  annee         String // ex. "2026-2027"
+  dateDebut     DateTime      @db.Date
+  dureeSemaines Int
+  niveauRequis  String
+  createdAt     DateTime      @default(now())
+
+  semaines            Semaine[] // R4/R5 : générées automatiquement
+  modules             Module[]
+  seances             Seance[]
+  demandesInscription DemandeInscription[]
+
+  @@unique([code, annee])
+}
+
+model Semaine {
+  id          Int       @id @default(autoincrement())
+  numero      Int
+  dateDebut   DateTime  @db.Date
+  dateFin     DateTime  @db.Date
+  formationId Int
+  formation   Formation @relation(fields: [formationId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  seances Seance[]
+
+  @@unique([formationId, numero])
+}
+
+model Module {
+  id          Int       @id @default(autoincrement())
+  nom         String
+  formationId Int
+  formation   Formation @relation(fields: [formationId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  matieres ModuleMatiere[]
+}
+
+model Matiere {
+  id            Int         @id @default(autoincrement())
+  nom           String
+  nbHeuresTotal Int
+  enseignantId  Int? // R6a : un seul enseignant (ou aucun)
+  enseignant    Enseignant? @relation(fields: [enseignantId], references: [id], onDelete: SetNull)
+  createdAt     DateTime    @default(now())
+
+  modules ModuleMatiere[] // R7 : une matière peut appartenir à plusieurs formations
+  lecons  Lecon[]
+  seances Seance[]
+}
+
+// Table de jointure Module ↔ Matiere (R7)
+model ModuleMatiere {
+  id        Int      @id @default(autoincrement())
+  moduleId  Int
+  matiereId Int
+  module    Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  matiere   Matiere  @relation(fields: [matiereId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([moduleId, matiereId])
+}
+
+model Lecon {
+  id        Int      @id @default(autoincrement())
+  titre     String
+  ordre     Int
+  matiereId Int
+  matiere   Matiere  @relation(fields: [matiereId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  journaux JournalClasse[]
+}
+
+// ───────────────────────── Demandes ─────────────────────────
+
+model DemandeInscription {
+  id          Int         @id @default(autoincrement())
+  etudiantId  Int
+  formationId Int
+  etudiant    Etudiant    @relation(fields: [etudiantId], references: [id], onDelete: Cascade)
+  formation   Formation   @relation(fields: [formationId], references: [id], onDelete: Cascade)
+  dateDemande DateTime    @default(now())
+  etat        EtatDemande @default(EN_ATTENTE)
+  motifRefus  String? // obligatoire si REFUSEE (vérifié côté serveur)
+  createdAt   DateTime    @default(now())
+
+  @@unique([etudiantId, formationId])
+}
+
+model DemandeEnseignement {
+  id              Int         @id @default(autoincrement())
+  enseignantId    Int
+  enseignant      Enseignant  @relation(fields: [enseignantId], references: [id], onDelete: Cascade)
+  dateDemande     DateTime    @default(now())
+  cv              String      @db.Text // résumé du CV
+  cvFichier       String? // chemin du fichier CV
+  nbHeuresPropose Int
+  etat            EtatDemande @default(EN_ATTENTE)
+  motifRefus      String?
+  createdAt       DateTime    @default(now())
+}
+
+// ───────────────────────── Séances & suivi ─────────────────────────
+
+model Seance {
+  id           Int        @id @default(autoincrement())
+  date         DateTime   @db.Date
+  heureDebut   String // "08:30"
+  heureFin     String // "10:00"
+  salle        String
+  formationId  Int
+  semaineId    Int
+  matiereId    Int
+  enseignantId Int
+  formation    Formation  @relation(fields: [formationId], references: [id], onDelete: Cascade)
+  semaine      Semaine    @relation(fields: [semaineId], references: [id], onDelete: Cascade)
+  matiere      Matiere    @relation(fields: [matiereId], references: [id])
+  enseignant   Enseignant @relation(fields: [enseignantId], references: [id])
+  createdAt    DateTime   @default(now())
+
+  journal           JournalClasse?
+  absencesEtudiants AbsenceEtudiant[]
+  absenceEnseignant AbsenceEnseignant?
+
+  // R6b : une matière au plus une fois par jour pour une même formation
+  @@unique([formationId, matiereId, date])
+}
+
+model JournalClasse {
+  id          Int      @id @default(autoincrement())
+  seanceId    Int      @unique
+  seance      Seance   @relation(fields: [seanceId], references: [id], onDelete: Cascade)
+  leconId     Int?
+  lecon       Lecon?   @relation(fields: [leconId], references: [id], onDelete: SetNull)
+  contenu     String   @db.Text
+  observation String   @db.Text
+  createdAt   DateTime @default(now())
+}
+
+model AbsenceEtudiant {
+  id         Int      @id @default(autoincrement())
+  seanceId   Int
+  etudiantId Int
+  seance     Seance   @relation(fields: [seanceId], references: [id], onDelete: Cascade)
+  etudiant   Etudiant @relation(fields: [etudiantId], references: [id], onDelete: Cascade)
+  justifiee  Boolean  @default(false)
+  motif      String?
+  createdAt  DateTime @default(now())
+
+  @@unique([seanceId, etudiantId])
+}
+
+model AbsenceEnseignant {
+  id           Int        @id @default(autoincrement())
+  seanceId     Int        @unique
+  enseignantId Int
+  seance       Seance     @relation(fields: [seanceId], references: [id], onDelete: Cascade)
+  enseignant   Enseignant @relation(fields: [enseignantId], references: [id], onDelete: Cascade)
+  justifiee    Boolean    @default(false)
+  motif        String?
+  createdAt    DateTime   @default(now())
+}
+
+// ───────────────────────── Paie & paramètres ─────────────────────────
+
+// R9 : montant = heures assurées dans le mois × tauxHoraire (séances d'absence exclues)
+model Paie {
+  id           Int        @id @default(autoincrement())
+  enseignantId Int
+  enseignant   Enseignant @relation(fields: [enseignantId], references: [id], onDelete: Cascade)
+  mois         Int // 1-12
+  annee        Int
+  nbHeures     Float
+  tauxHoraire  Float
+  montant      Float
+  dateCalcul   DateTime   @default(now())
+  createdAt    DateTime   @default(now())
+
+  @@unique([enseignantId, mois, annee])
+}
+
+// Ligne unique (id = 1)
+model Parametre {
+  id          Int      @id @default(1)
+  nomCentre   String
+  tauxHoraire Float    @default(15) // en DT, identique pour toutes les matières
+  createdAt   DateTime @default(now())
+}
