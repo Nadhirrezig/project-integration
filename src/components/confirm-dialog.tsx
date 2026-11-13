@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ type Props = {
 export function ConfirmDialog({ title = "Confirmer la suppression", description, action, confirmLabel = "Supprimer", trigger, onSuccess }: Props) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
+  const router = useRouter();
 
   function confirmer() {
     startTransition(async () => {
@@ -30,6 +32,7 @@ export function ConfirmDialog({ title = "Confirmer la suppression", description,
         toast.success(res.message);
         setOpen(false);
         onSuccess?.();
+        if (res.redirectTo) router.push(res.redirectTo);
       } else {
         toast.error(res.message);
       }

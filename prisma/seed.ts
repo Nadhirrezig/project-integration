@@ -33,22 +33,22 @@ const ANNEE = "2026-2027";
 const DATE_DEBUT = d("2026-09-14"); // lundi
 
 const ENSEIGNANTS = [
-  { nom: "Ben Salah", prenom: "Mohamed", cin: "07845123", adresse: "12 Rue Ibn Khaldoun, Tunis", telephone: "+216 98 456 123", email: "mohamed.bensalah@gmail.com", specialite: "Génie logiciel",
+  { nom: "Ben Salah", prenom: "Mohamed", cin: "07845123", adresse: "12 Rue Ibn Khaldoun, Tunis", telephone: "98456123", email: "mohamed.bensalah@gmail.com", specialite: "Génie logiciel",
     cv: "Ingénieur en informatique (ENSI, 2012). 10 ans d'expérience en développement logiciel (C, Java). Formateur certifié depuis 2018.", heures: 300 },
-  { nom: "Trabelsi", prenom: "Sonia", cin: "08123456", adresse: "45 Avenue Habib Bourguiba, Ariana", telephone: "+216 22 345 678", email: "sonia.trabelsi@yahoo.fr", specialite: "Développement web et bases de données",
+  { nom: "Trabelsi", prenom: "Sonia", cin: "08123456", adresse: "45 Avenue Habib Bourguiba, Ariana", telephone: "22345678", email: "sonia.trabelsi@yahoo.fr", specialite: "Développement web et bases de données",
     cv: "Mastère professionnel en développement web (ISET Charguia). Développeuse full-stack (PHP, JavaScript, PostgreSQL) pendant 6 ans.", heures: 250 },
-  { nom: "Jaziri", prenom: "Karim", cin: "06987412", adresse: "8 Rue de Marseille, Sousse", telephone: "+216 55 789 012", email: "karim.jaziri@gmail.com", specialite: "Systèmes et réseaux",
+  { nom: "Jaziri", prenom: "Karim", cin: "06987412", adresse: "8 Rue de Marseille, Sousse", telephone: "55789012", email: "karim.jaziri@gmail.com", specialite: "Systèmes et réseaux",
     cv: "Licence en réseaux informatiques. Certifications CCNA et Linux LPIC-1. Administrateur systèmes et réseaux dans une PME pendant 8 ans.", heures: 280 },
-  { nom: "Gharbi", prenom: "Amel", cin: "09456789", adresse: "23 Rue Farhat Hached, Sfax", telephone: "+216 97 234 567", email: "amel.gharbi@gmail.com", specialite: "Gestion et comptabilité",
+  { nom: "Gharbi", prenom: "Amel", cin: "09456789", adresse: "23 Rue Farhat Hached, Sfax", telephone: "97234567", email: "amel.gharbi@gmail.com", specialite: "Gestion et comptabilité",
     cv: "Maîtrise en sciences comptables (IHEC Carthage). Comptable dans un cabinet d'expertise comptable, 7 ans d'expérience.", heures: 220 },
-  { nom: "Mansouri", prenom: "Hela", cin: "10234567", adresse: "3 Rue de Palestine, Tunis", telephone: "+216 24 567 890", email: "hela.mansouri@outlook.com", specialite: "Langues et communication",
+  { nom: "Mansouri", prenom: "Hela", cin: "10234567", adresse: "3 Rue de Palestine, Tunis", telephone: "24567890", email: "hela.mansouri@outlook.com", specialite: "Langues et communication",
     cv: "Maîtrise d'anglais (FLAH Manouba) et CAPES de français. Enseignante de langues en formation professionnelle depuis 9 ans.", heures: 200 },
-  { nom: "Bouazizi", prenom: "Nizar", cin: "07654321", adresse: "17 Avenue de la République, Nabeul", telephone: "+216 50 678 901", email: "nizar.bouazizi@gmail.com", specialite: "Bureautique",
+  { nom: "Bouazizi", prenom: "Nizar", cin: "07654321", adresse: "17 Avenue de la République, Nabeul", telephone: "50678901", email: "nizar.bouazizi@gmail.com", specialite: "Bureautique",
     cv: "Licence appliquée en informatique de gestion. Certifié Microsoft Office Specialist (Word, Excel). Formateur bureautique depuis 2015.", heures: 260 },
   // Demandes en attente (aucune matière attribuée)
-  { nom: "Khelifi", prenom: "Rim", cin: "11345678", adresse: "56 Rue Mongi Slim, Monastir", telephone: "+216 92 111 222", email: "rim.khelifi@gmail.com", specialite: "Intelligence artificielle",
+  { nom: "Khelifi", prenom: "Rim", cin: "11345678", adresse: "56 Rue Mongi Slim, Monastir", telephone: "92111222", email: "rim.khelifi@gmail.com", specialite: "Intelligence artificielle",
     cv: "Doctorante en intelligence artificielle (FST). Expérience en Python, apprentissage automatique et analyse de données.", heures: 120 },
-  { nom: "Hammami", prenom: "Walid", cin: "09876543", adresse: "9 Rue Ali Belhouane, Bizerte", telephone: "+216 26 333 444", email: "walid.hammami@gmail.com", specialite: "Cybersécurité",
+  { nom: "Hammami", prenom: "Walid", cin: "09876543", adresse: "9 Rue Ali Belhouane, Bizerte", telephone: "26333444", email: "walid.hammami@gmail.com", specialite: "Cybersécurité",
     cv: "Ingénieur sécurité informatique. Certifié CEH. 5 ans d'expérience en audit de sécurité des systèmes d'information.", heures: 150 },
 ];
 
@@ -229,7 +229,7 @@ async function main() {
     const marie = rep.formation === "TSIG" && i % 6 === 0;
     const etudiant = await prisma.etudiant.create({
       data: {
-        matricule: `ETU-2026-${String(i + 1).padStart(3, "0")}`,
+        matricule: `ETU-2026-${String(i + 1).padStart(4, "0")}`,
         nom, prenom,
         dateNaissance: d(`${anneeNaissance}-${String((i % 12) + 1).padStart(2, "0")}-${String((i * 7) % 27 + 1).padStart(2, "0")}`),
         lieuNaissance: VILLES[i % VILLES.length],
@@ -237,8 +237,8 @@ async function main() {
         cin: String(14000000 + i * 37421).padStart(8, "0"),
         adresse: `${(i * 13) % 90 + 1} ${RUES[i % RUES.length]}, ${VILLES[(i + 3) % VILLES.length]}`,
         niveauEtude: rep.etat === "REFUSEE" && rep.motif === "Niveau insuffisant" ? "3ème année secondaire" : formation.niveau,
-        telephone: `+216 ${choisir(["20", "22", "25", "50", "52", "55", "93", "98"])} ${String(100 + ((i * 271) % 900))} ${String(100 + ((i * 577) % 900))}`,
-        etatCivil: marie ? (sexe === "F" ? "Mariée" : "Marié") : "Célibataire",
+        telephone: `${choisir(["20", "22", "25", "50", "52", "55", "93", "98"])}${String(100 + ((i * 271) % 900))}${String(100 + ((i * 577) % 900))}`,
+        etatCivil: marie ? "Marié(e)" : "Célibataire",
         nomPereOuConjoint: marie && sexe === "F" ? `${pere} (conjoint)` : `${pere} ${nom}`,
         demandesInscription: {
           create: {

@@ -5,6 +5,8 @@ export type ActionResult = {
   errors?: Record<string, string[] | undefined>;
   // Valeurs saisies, renvoyées pour ne pas vider le formulaire en cas d'erreur
   fields?: Record<string, string>;
+  // Page à ouvrir après un succès (formulaires sur page entière)
+  redirectTo?: string;
 };
 
 export const etatInitial: ActionResult = { success: false, message: "" };

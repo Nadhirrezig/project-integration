@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { Pencil, Plus, X } from "lucide-react";
+import { useFormAction } from "@/hooks/use-form-action";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,11 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { FieldError } from "@/components/field-error";
 import { FormDialog } from "@/components/form-dialog";
-import { useActionToast } from "@/hooks/use-action-toast";
 import {
   ajouterMatiereAuModule, ajouterModule, renommerModule, retirerMatiereDuModule, supprimerModule,
 } from "@/lib/actions/formations";
-import { etatInitial } from "@/lib/action-result";
 
 export type ModuleVue = {
   id: number;
@@ -65,11 +64,10 @@ function RenommerModuleDialog({ mod }: { mod: ModuleVue }) {
 
 function AjouterMatiereForm({ moduleId, options }: { moduleId: number; options: { id: number; nom: string }[] }) {
   const [valeur, setValeur] = useState("");
-  const [state, action, pending] = useActionState(ajouterMatiereAuModule.bind(null, moduleId), etatInitial);
-  useActionToast(state, () => setValeur(""));
+  const [, onSubmit, pending] = useFormAction(ajouterMatiereAuModule.bind(null, moduleId), () => setValeur(""));
 
   return (
-    <form action={action} className="flex items-center gap-2">
+    <form onSubmit={onSubmit} className="flex items-center gap-2">
       <Select name="matiereId" value={valeur} onValueChange={setValeur}>
         <SelectTrigger className="w-72" aria-label="Matière à ajouter">
           <SelectValue placeholder={options.length ? "Choisir une matière…" : "Toutes les matières sont déjà affectées"} />

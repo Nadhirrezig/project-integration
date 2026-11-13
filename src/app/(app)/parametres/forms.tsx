@@ -1,20 +1,18 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useRef } from "react";
+import { useFormAction } from "@/hooks/use-form-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldError } from "@/components/field-error";
 import { changerMotDePasse, modifierParametres } from "@/lib/actions/parametres";
-import { etatInitial } from "@/lib/action-result";
-import { useActionToast } from "@/hooks/use-action-toast";
 
 export function ParametresForm({ nomCentre, tauxHoraire }: { nomCentre: string; tauxHoraire: number }) {
-  const [state, action, pending] = useActionState(modifierParametres, etatInitial);
-  useActionToast(state);
+  const [state, onSubmit, pending] = useFormAction(modifierParametres);
 
   return (
-    <form action={action} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="nomCentre">Nom du centre</Label>
         <Input id="nomCentre" name="nomCentre" defaultValue={state.fields?.nomCentre ?? nomCentre} required />
@@ -34,11 +32,10 @@ export function ParametresForm({ nomCentre, tauxHoraire }: { nomCentre: string; 
 
 export function MotDePasseForm() {
   const formRef = useRef<HTMLFormElement>(null);
-  const [state, action, pending] = useActionState(changerMotDePasse, etatInitial);
-  useActionToast(state, () => formRef.current?.reset());
+  const [state, onSubmit, pending] = useFormAction(changerMotDePasse, () => formRef.current?.reset());
 
   return (
-    <form ref={formRef} action={action} className="space-y-4">
+    <form ref={formRef} onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="ancien">Mot de passe actuel</Label>
         <Input id="ancien" name="ancien" type="password" autoComplete="current-password" required />

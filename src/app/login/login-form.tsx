@@ -1,31 +1,21 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { useFormAction } from "@/hooks/use-form-action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "@/lib/actions/auth";
-import { etatInitial } from "@/lib/action-result";
 
 export function LoginForm() {
   const router = useRouter();
-  const [state, action, pending] = useActionState(login, etatInitial);
-
-  useEffect(() => {
-    if (!state.message) return;
-    if (state.success) {
-      toast.success(state.message);
-      router.replace("/");
-      router.refresh();
-    } else {
-      toast.error(state.message);
-    }
-  }, [state, router]);
+  const [state, onSubmit, pending] = useFormAction(login, () => {
+    router.replace("/");
+    router.refresh();
+  });
 
   return (
-    <form action={action} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="login">Identifiant</Label>
         <Input id="login" name="login" defaultValue={state.fields?.login} autoComplete="username" autoFocus required />

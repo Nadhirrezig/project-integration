@@ -32,3 +32,8 @@ export function versInputDate(date: Date) {
 export function depuisInputDate(valeur: string) {
   return new Date(`${valeur}T00:00:00.000Z`);
 }
+
+/** "98456123" → "98 456 123" */
+export function formatTelephone(tel: string) {
+  return /^\d{8}$/.test(tel) ? `${tel.slice(0, 2)} ${tel.slice(2, 5)} ${tel.slice(5)}` : tel;
+}

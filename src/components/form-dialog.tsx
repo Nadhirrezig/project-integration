@@ -1,12 +1,12 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
+import { useFormAction } from "@/hooks/use-form-action";
 import { Button } from "@/components/ui/button";
 import {
   Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
-import { useActionToast } from "@/hooks/use-action-toast";
-import { etatInitial, type ActionResult } from "@/lib/action-result";
+import type { ActionResult } from "@/lib/action-result";
 
 type Action = (prev: ActionResult, formData: FormData) => Promise<ActionResult>;
 
@@ -43,11 +43,10 @@ export function FormDialog({ trigger, title, description, action, submitLabel = 
 function FormContent({
   action, submitLabel, onSuccess, children,
 }: { action: Action; submitLabel: string; onSuccess: () => void; children: (state: ActionResult) => React.ReactNode }) {
-  const [state, formAction, pending] = useActionState(action, etatInitial);
-  useActionToast(state, onSuccess);
+  const [state, onSubmit, pending] = useFormAction(action, onSuccess);
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-4">
       {children(state)}
       <DialogFooter>
         <DialogClose asChild>
