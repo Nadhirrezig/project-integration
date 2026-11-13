@@ -1,30 +1,17 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
-import { toast } from "sonner";
+import { useActionState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldError } from "@/components/field-error";
 import { changerMotDePasse, modifierParametres } from "@/lib/actions/parametres";
-import { etatInitial, type ActionResult } from "@/lib/action-result";
-
-function useToastResultat(state: ActionResult, onSuccess?: () => void) {
-  useEffect(() => {
-    if (!state.message) return;
-    if (state.success) {
-      toast.success(state.message);
-      onSuccess?.();
-    } else {
-      toast.error(state.message);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]);
-}
+import { etatInitial } from "@/lib/action-result";
+import { useActionToast } from "@/hooks/use-action-toast";
 
 export function ParametresForm({ nomCentre, tauxHoraire }: { nomCentre: string; tauxHoraire: number }) {
   const [state, action, pending] = useActionState(modifierParametres, etatInitial);
-  useToastResultat(state);
+  useActionToast(state);
 
   return (
     <form action={action} className="space-y-4">
@@ -48,7 +35,7 @@ export function ParametresForm({ nomCentre, tauxHoraire }: { nomCentre: string; 
 export function MotDePasseForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const [state, action, pending] = useActionState(changerMotDePasse, etatInitial);
-  useToastResultat(state, () => formRef.current?.reset());
+  useActionToast(state, () => formRef.current?.reset());
 
   return (
     <form ref={formRef} action={action} className="space-y-4">

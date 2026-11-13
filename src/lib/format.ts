@@ -22,3 +22,13 @@ export function aujourdhuiUTC() {
     .map(Number);
   return new Date(Date.UTC(annee, mois - 1, jour));
 }
+
+/** Valeur pour <input type="date"> (yyyy-MM-dd) d'une colonne @db.Date. */
+export function versInputDate(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+/** "2026-09-14" → Date à minuit UTC. */
+export function depuisInputDate(valeur: string) {
+  return new Date(`${valeur}T00:00:00.000Z`);
+}
